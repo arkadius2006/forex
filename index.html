@@ -68,27 +68,34 @@
             font-family: "Times New Roman", serif;
         }
 
-
-        section p output {
-            font-size: 1em;
-            font-family: "Lucida Console", Monaco, monospace;
-        }
-
         article {
             padding: 1em;
-            height: 15em;
         }
 
-        article h3 {
+        article p {
+            text-align: center;
+        }
+
+        #pair {
             text-align: center;
             font-family: Arial sans-serif;
             font-size: 2em;
         }
 
-        article p {
+        #value {
             text-align: center;
             font-family: "Lucida Console", Monaco, monospace;
             font-size: 4em;
+        }
+
+        #lastUpdated {
+            font-size: 1em;
+            font-family: "Lucida Console", Monaco, monospace;
+        }
+
+        #expires-in {
+            font-size: 1em;
+            font-family: "Lucida Console", Monaco, monospace;
         }
 
         #quantity {
@@ -115,7 +122,9 @@
 
     <article>
         <h3 id="pair">USDJPY</h3>
-        <p><output id="quote"></output></p>
+        <p><output id="value"></output></p>
+        <p><output id="lastUpdated"></output></p>
+        <p><output id="expires-in"></output></p>
     </article>
 
     <nav>

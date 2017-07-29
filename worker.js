@@ -8,19 +8,35 @@ var getQuote = function () {
 
 
 var status = 'not-working';
-var timer;
+var quote = {'value': '', 'expiry': ''};
 
-var pollQuote = function () {
-    var q = getQuote();
-
-    postMessage({'responseType': 'quote', 'quote': q});
-    timer = setTimeout(pollQuote, 1000);
+var startPolling = function () {
+    poll();
 };
 
-var stopPolling = function() {
-    status = 'not-working';
-    clearTimeout(timer);
+var pollInterval = 60000;
+
+var poll = function () {
+    var now = new Date();
+    quote['value'] = getQuote();
+    quote['lastUpdated'] = now;
+    quote['expiry'] = new Date(now.getTime() + pollInterval);
+    setTimeout(poll, pollInterval);
 };
+
+var startPublishing = function () {
+    startPolling();
+
+    publish();
+};
+
+var publishInterval = 1000;
+
+var publish = function () {
+    postMessage({'responseType': 'quote', 'value': quote['value'], 'lastUpdated': quote['lastUpdated'],'expiry': quote['expiry']});
+    setTimeout(publish, publishInterval);
+};
+
 
 onmessage = function (e) {
     var request = e.data;
@@ -30,7 +46,7 @@ onmessage = function (e) {
         case 'startPolling': {
             if (status === 'not-working') {
                 status = 'working';
-                pollQuote();
+                startPublishing();
             } else {
                 throw new Error('Cannot start polling, cause status is ' + status);
             }

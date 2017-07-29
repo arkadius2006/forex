@@ -1,14 +1,19 @@
 var worker = new Worker('worker.js');
 
-var quote = '';
+var quote = {'value': '', 'lastUpdated': '', 'expiry': ''};
 
 worker.onmessage = function (e) {
     var response = e.data;
     var responseType = response['responseType'];
     switch (responseType) {
         case 'quote': {
-            quote = response['quote'];
-            document.getElementById('quote').textContent = quote;
+
+            quote['value'] = response['value'];
+            quote['lastUpdated'] = response['lastUpdated'];
+            quote['expiry'] = response['expiry'];
+
+            updateQuoteView();
+
             break;
         }
 
@@ -16,6 +21,17 @@ worker.onmessage = function (e) {
             throw new Error('Unknown response type: ' + responseType);
         }
     }
+};
+
+var updateQuoteView = function () {
+    document.getElementById('value').textContent = quote['value'];
+    document.getElementById('lastUpdated').textContent = 'last updated: ' + quote['lastUpdated'];
+
+    var exp = quote['expiry'];
+    var now = new Date();
+    var diff_millis = exp - now;
+    var diff_seconds = (diff_millis / 1000).toFixed(0);
+    document.getElementById('expires-in').textContent = 'expires in: ' + diff_seconds + ' seconds';
 };
 
 var init = function () {
@@ -28,7 +44,7 @@ var portfolio = {
     'jpy': 0
 };
 
-var getQuantity = function() {
+var getQuantity = function () {
     var str = document.getElementById('quantity').value;
     var num = parseFloat(str);
     if (num > 0) {
@@ -42,10 +58,20 @@ var getQuantity = function() {
 var buy = function () {
     var quantity = getQuantity();
     if (quantity > 0) {
-        var decision = confirm("Do you want to buy "  + quantity + " USDJPY?");
+        // make snapshot ot shared vars
+        var value = quote['value'] + '';
+        var expiry = new Date(quote['expiry'].getTime());
+
+        var decision = confirm("Do you want to buy " + quantity + " USDJPY @ " + value + "?");
         if (decision) {
-            portfolio.usd += quantity;
-            portfolio.jpy -= quantity * quote;
+            // check expiry
+            var now = new Date();
+            if (now.getTime() < expiry.getTime()) {
+                portfolio.usd += quantity;
+                portfolio.jpy -= quantity * value;
+            } else {
+                alert('Quote already expired, please submit new order');
+            }
         }
 
         updateBalance();
@@ -58,10 +84,19 @@ var buy = function () {
 var sell = function () {
     var quantity = getQuantity();
     if (quantity > 0) {
-        var decision = confirm("Do you want to buy "  + quantity + " USDJPY?");
+        var value = quote['value'] + '';
+        var expiry = new Date(quote['expiry'].getTime());
+
+        var decision = confirm("Do you want to sell " + quantity + " USDJPY @ " + value + "?");
         if (decision) {
-            portfolio.usd -= quantity;
-            portfolio.jpy += quantity * quote;
+            //check expiry
+            var now = new Date();
+            if (now.getTime() < expiry.getTime()) {
+                portfolio.usd -= quantity;
+                portfolio.jpy += quantity * value;
+            } else {
+                alert('Quote already expired, please submit new order');
+            }
         }
 
         updateBalance();
@@ -75,6 +110,6 @@ var updateBalance = function () {
         + ", " + "JPY: " + formatQuantity(portfolio.jpy);
 };
 
-var formatQuantity = function(quantity) {
+var formatQuantity = function (quantity) {
     return quantity.toFixed(2);
 };
