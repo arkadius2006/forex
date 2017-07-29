@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live quotes</title>
+    <style>
+        div.container {
+            font-size: 100%;
+            width: 100%;
+            border: 1px solid grey
+        }
+
+        header, footer {
+            padding: 1em;
+            color: white;
+            background-color: black;
+            text-align: center;
+            clear: left;
+        }
+
+        nav {
+            margin: 0;
+            padding: 1em;
+            border-bottom: 1px solid grey;
+            border-top: 2px solid black;
+        }
+
+        #buttons {
+            margin: 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        button {
+            margin-right: 4em;
+            margin-left: 4em;
+            font-size: 1em;
+            padding: 1em;
+            border-radius: 4px;
+        }
+
+        #buy-button {
+            border: 2px solid grey;
+            color: white;
+            background-color: grey;
+        }
+
+        #sell-button {
+            border: 2px solid grey;
+            color: white;
+            background-color: grey;
+        }
+
+        #buy-button:hover, #sell-button:hover {
+            color: black;
+            background-color: white;
+        }
+
+        section {
+            text-align: left;
+            font-size: 1em;
+            padding: 1em;
+            border-bottom: 2px solid black;
+        }
+
+        section p {
+            font-size: 1.5em;
+            font-family: "Times New Roman", serif;
+        }
+
+
+        section p output {
+            font-size: 1em;
+            font-family: "Lucida Console", Monaco, monospace;
+        }
+
+        article {
+            padding: 1em;
+            height: 15em;
+        }
+
+        article h3 {
+            text-align: center;
+            font-family: Arial sans-serif;
+            font-size: 2em;
+        }
+
+        article p {
+            text-align: center;
+            font-family: "Lucida Console", Monaco, monospace;
+            font-size: 4em;
+        }
+
+        #quantity {
+            font-size: 1em;
+            margin: 1em;
+        }
+
+        #inputdiv {
+            text-align: center;
+        }
+    </style>
+</head>
+<body onload="init()">
+<script src="main.js"></script>
+
+<div class="container">
+    <header>
+        <h1>Forex trading workbench demo</h1>
+    </header>
+
+    <section>
+        <p>Your balance is: <output id="balance"></output></p>
+    </section>
+
+    <article>
+        <h3 id="pair">USDJPY</h3>
+        <p><output id="quote"></output></p>
+    </article>
+
+    <nav>
+        <div id="operation">
+            <div id="inputdiv">
+                <input id="quantity" type="text">
+            </div>
+            <div id="buttons">
+                <button id="buy-button" onclick="buy()">buy</button>
+                <button id="sell-button" onclick="sell()">sell</button>
+            </div>
+
+        </div>
+    </nav>
+
+    <footer>Copyright &copy Arkady Seletsky</footer>
+</div>
+</body>
+</html>
