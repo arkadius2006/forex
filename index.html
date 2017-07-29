@@ -74,26 +74,6 @@
 
         article p {
             text-align: center;
-        }
-
-        #pair {
-            text-align: center;
-            font-family: Arial sans-serif;
-            font-size: 2em;
-        }
-
-        #value {
-            text-align: center;
-            font-family: "Lucida Console", Monaco, monospace;
-            font-size: 4em;
-        }
-
-        #lastUpdated {
-            font-size: 1em;
-            font-family: "Lucida Console", Monaco, monospace;
-        }
-
-        #expires-in {
             font-size: 1em;
             font-family: "Lucida Console", Monaco, monospace;
         }
@@ -117,19 +97,18 @@
     </header>
 
     <section>
-        <p>Your balance is: <output id="balance"></output></p>
+        <p>Your PnL is: <output id="pnl"></output></p>
     </section>
 
-    <article>
-        <h3 id="pair">USDJPY</h3>
-        <p><output id="value"></output></p>
-        <p><output id="lastUpdated"></output></p>
-        <p><output id="expires-in"></output></p>
+    <article id="article">
     </article>
 
     <nav>
         <div id="operation">
             <div id="inputdiv">
+                Pair:
+                <input id="pair-name" type="text">
+                Quantity:
                 <input id="quantity" type="text">
             </div>
             <div id="buttons">

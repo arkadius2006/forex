@@ -1,3 +1,11 @@
+var pairs = ['usdjpy', 'gbpusd', 'eurusd'];
+
+var names = {
+    'usdjpy': 'USDJPY',
+    'gbpusd': 'GBPUSD',
+    'eurusd': 'EURUSD'
+};
+
 var getQuote = function () {
     // todo this is simulation
     var mean = 110.680;
@@ -8,7 +16,7 @@ var getQuote = function () {
 
 
 var status = 'not-working';
-var quote = {'value': '', 'expiry': ''};
+var quotes = [];
 
 var startPolling = function () {
     poll();
@@ -17,10 +25,22 @@ var startPolling = function () {
 var pollInterval = 60000;
 
 var poll = function () {
+    quotes = [];
+
     var now = new Date();
-    quote['value'] = getQuote();
-    quote['lastUpdated'] = now;
-    quote['expiry'] = new Date(now.getTime() + pollInterval);
+    var expiry = new Date(now.getTime() + pollInterval);
+    var i;
+    var pair;
+    var quote;
+    var name;
+
+    for (i = 0; i < pairs.length; i += 1) {
+        pair = pairs[i];
+        name = names[pair];
+        quote = {'pair': pair, 'name': name, 'lastUpdated': now, 'expiry': expiry, 'value': getQuote()};
+        quotes.push(quote);
+    }
+
     setTimeout(poll, pollInterval);
 };
 
@@ -33,7 +53,7 @@ var startPublishing = function () {
 var publishInterval = 1000;
 
 var publish = function () {
-    postMessage({'responseType': 'quote', 'value': quote['value'], 'lastUpdated': quote['lastUpdated'],'expiry': quote['expiry']});
+    postMessage({'responseType': 'quotes', 'quotes': quotes});
     setTimeout(publish, publishInterval);
 };
 
