@@ -11,6 +11,8 @@ var portfolio = {};
 
 var quotes = undefined;
 
+var history = [];
+
 var worker = new Worker('worker.js');
 
 worker.onmessage = function (e) {
@@ -127,7 +129,10 @@ var buy = function () {
                 adjust(ccy1, quantity);
                 adjust(ccy2, -quantity * rate);
 
+                history.push({'time': now, 'pair': pair, 'pairname': pairname, 'quantity': quantity, 'side': 'bot', 'rate': rate});
+
                 updatePortfolioView();
+                updateHistoryView();
             } else {
                 alert('Quote already expired, please submit new order');
             }
@@ -166,7 +171,10 @@ var sell = function () {
                 adjust(ccy1, -quantity);
                 adjust(ccy2, quantity * rate);
 
+                history.push({'time': now, 'pair': pair, 'pairname': pairname, 'quantity': quantity, 'side': 'sold', 'rate': rate});
+
                 updatePortfolioView();
+                updateHistoryView();
             } else {
                 alert('Quote already expired, please submit new order');
             }
@@ -403,4 +411,24 @@ var selectPair = function (event) {
 
     document.getElementById('your-pair').value = target.innerHTML;
     updatePairsList();
+};
+
+var updateHistoryView = function () {
+    var i;
+    var str = '';
+    var operation;
+
+    for (i = 0; i < history.length; i += 1) {
+        operation = history[i];
+
+        str += operation['time'] + ' '
+            + 'You '
+            + operation['side'] + ' '
+            + operation['quantity'] + ' '
+            + operation['pairname'] + ' '
+            + ' @ ' + operation['rate']
+            + '\n';
+    }
+
+    document.getElementById('your-history-textarea').value = str;
 };
