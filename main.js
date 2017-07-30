@@ -1,38 +1,20 @@
-// data structures
-var ccys = {
-    'usd': 'USD',
-    'jpy': 'JPY',
-    'gbp': 'GBP',
-    'eur': 'EUR'
-};
-
-
 var portfolio = {};
+var operations = [];
 
-var quotes = undefined;
+// live quotes from 1forge.com
+var symbols = ['EURUSD', 'USDJPY', 'GBPUSD', 'USDCHF', 'EURGBP', 'EURJPY', 'EURCHF', 'AUDUSD', 'USDCAD', 'NZDUSD'];
+var quote_list = [];
+var quote_map = {};
 
-var history = [];
+// configuration
+var expirationInterval = 60000;
+var pollInterval = 60000;
+var updateInterval = 1000;
 
-var worker = new Worker('worker.js');
-
-worker.onmessage = function (e) {
-    var response = e.data;
-    var responseType = response['responseType'];
-
-    switch (responseType) {
-        case 'quotes': {
-            quotes = response['quotes'];
-
-            updateQuotesView();
-            updatePortfolioView();
-            updatePairsList();
-            updateYourRate();
-            break;
-        }
-
-        default: {
-            throw new Error('Unknown response type: ' + responseType);
-        }
+// 1forge.com api key
+var secret = {
+    '1forge.com': {
+        'api_key': 'vO3LdQiJcUjzle3R8WcYj2I8v7QYMnPf'
     }
 };
 
@@ -42,55 +24,46 @@ var updateQuotesView = function () {
 
 var createQuotesElement = function () {
     var str = '';
-    var pair;
-    var q;
+    var i, q;
 
-    if (quotes) {
-        var values = quotes['values'];
-        if (values) {
-            for (pair in values) {
-                q = values[pair];
-                str += createQuoteElement(q['name'], q['value']);
-            }
-        }
-
-        str += createExpiryElement(quotes['lastUpdated'], quotes['expiry']);
+    for (i = 0; i < quote_list.length; i += 1) {
+        q = quote_list[i];
+        str += createQuoteElement(q['symbol'], q['price'], q['timestamp']);
     }
 
     return str;
 };
 
-var createQuoteElement = function (name, value) {
-    return '<p>'
-        + name + ' = ' + value
-        + '</p>';
-};
-
-var createExpiryElement = function (lastUpdated, expiry) {
+var createQuoteElement = function (symbol, price, timestamp) {
+    var expiry = new Date(timestamp.getTime() + expirationInterval);
     var now = new Date();
     var seconds_to_expiry = ((expiry.getTime() - now.getTime()) / 1000).toFixed(0);
 
-    return '<p align="right">'
-        + "Will expire in " + seconds_to_expiry + ' sec'
+    return '<p>'
+        + symbol + ' = ' + price
+        + ', will expire in ' + seconds_to_expiry + ' sec'
         + '</p>';
 };
+
 
 var init = function () {
     try {
         updateQuotesView();
         updatePortfolioView();
-        updatePairsList();
-        updateYourRate();
+        updateSymbolList();
+        updateYourPrice();
+        startPolling();
 
-        document.getElementById('pairs-list').onclick = selectPair;
+        // time is ticking, prices are the same by they got expired as time goes by.
+        setInterval(updateQuotesView, updateInterval);
+
+        document.getElementById('symbol-list').onclick = selectSymbol;
     } catch (e) {
         alert(JSON.stringify(e));
     }
-
-    worker.postMessage({'requestType': 'startPolling'});
 };
 
-var getQuantity = function () {
+var getYourQuantity = function () {
     var str = document.getElementById('your-quantity').value;
     var num = parseFloat(str);
     if (num > 0) {
@@ -102,90 +75,116 @@ var getQuantity = function () {
 
 
 var buy = function () {
-    var pairname = getPairName();
-    var pair = lookupPairByName(pairname);
-    var quantity = getQuantity();
+    var symbol = getYourSymbol();
+    var quantity = getYourQuantity();
+    var ccy1 = symbol.substr(0, 3);
+    var ccy2 = symbol.substr(3, 3);
 
     var quote;
+    var price;
+    var timestamp;
     var expiry;
+
     var decision;
     var now;
-    var rate;
-    var ccy1 = pair.substr(0, 3);
-    var ccy2 = pair.substr(3, 3);
 
-    expiry = new Date(quotes['expiry'].getTime());
+    if (symbol && quantity > 0) {
+        quote = quote_map[symbol];
 
-    if (pair && quantity > 0) {
-        // make snapshot of shared vars
-        quote = quotes['values'][pair];
-        rate = quote['value'] + '';
+        if (quote) {
+            // make snapshot of shared vars
+            price = quote['price'];
+            timestamp = quote['timestamp'];
+            expiry = new Date(timestamp.getTime() + expirationInterval);
 
-        decision = confirm("Do you want to buy " + quantity + " " + pairname + " @ " + rate + "?");
-        if (decision) {
-            // check expiry
-            now = new Date();
-            if (now.getTime() < expiry.getTime()) {
-                adjust(ccy1, quantity);
-                adjust(ccy2, -quantity * rate);
+            decision = confirm("Do you want to buy " + quantity + " " + symbol + " @ " + price + "?");
+            if (decision) {
+                // check expiry
+                now = new Date();
 
-                history.push({'time': now, 'pair': pair, 'pairname': pairname, 'quantity': quantity, 'side': 'bot', 'rate': rate});
+                if (now.getTime() < expiry.getTime()) {
+                    adjust(ccy1, quantity);
+                    adjust(ccy2, -quantity * price);
 
-                updatePortfolioView();
-                updateHistoryView();
-            } else {
-                alert('Quote already expired, please submit new order');
+                    operations.push({
+                        'timestamp': now,
+                        'symbol': symbol,
+                        'quantity': quantity,
+                        'side': 'bot',
+                        'price': price
+                    });
+
+                    updatePortfolioView();
+                    updateHistoryView();
+                } else {
+                    alert('Quote already expired, please submit new order');
+                }
             }
+        } else {
+            alert("No quote found for symbol: " + symbol);
         }
     } else {
-        alert("Invalid pair or quantity format: " + pair);
+        alert("Invalid symbol or quantity format");
     }
 };
 
 
 var sell = function () {
-    var pairname = getPairName();
-    var pair = lookupPairByName(pairname);
-    var quantity = getQuantity();
+    var symbol = getYourSymbol();
+    var quantity = getYourQuantity();
+    var ccy1 = symbol.substr(0, 3);
+    var ccy2 = symbol.substr(3, 3);
 
     var quote;
+    var price;
+    var timestamp;
     var expiry;
+
     var decision;
     var now;
-    var rate;
-    var ccy1 = pair.substr(0, 3);
-    var ccy2 = pair.substr(3, 3);
 
-    expiry = new Date(quotes['expiry'].getTime());
+    if (symbol && quantity > 0) {
+        quote = quote_map[symbol];
 
-    if (pair && quantity > 0) {
-        // make snapshot of shared vars
-        quote = quotes['values'][pair];
-        rate = quote['value'] + '';
+        if (quote) {
+            // make snapshot of shared vars
+            price = quote['price'];
+            timestamp = quote['timestamp'];
+            expiry = new Date(timestamp.getTime() + expirationInterval);
 
-        decision = confirm("Do you want to sell " + quantity + " " + pairname + " @ " + rate + "?");
-        if (decision) {
-            // check expiry
-            now = new Date();
-            if (now.getTime() < expiry.getTime()) {
-                adjust(ccy1, -quantity);
-                adjust(ccy2, quantity * rate);
+            decision = confirm("Do you want to sell " + quantity + " " + symbol + " @ " + price + "?");
+            if (decision) {
+                // check expiry
+                now = new Date();
 
-                history.push({'time': now, 'pair': pair, 'pairname': pairname, 'quantity': quantity, 'side': 'sold', 'rate': rate});
+                if (now.getTime() < expiry.getTime()) {
+                    adjust(ccy1, -quantity);
+                    adjust(ccy2, quantity * price);
 
-                updatePortfolioView();
-                updateHistoryView();
-            } else {
-                alert('Quote already expired, please submit new order');
+                    operations.push({
+                        'timestamp': now,
+                        'symbol': symbol,
+                        'quantity': quantity,
+                        'side': 'sold',
+                        'price': price
+                    });
+
+                    updatePortfolioView();
+                    updateHistoryView();
+                } else {
+                    alert('Quote already expired, please submit new order');
+                }
             }
+        } else {
+            alert("No quote found for symbol: " + symbol);
         }
     } else {
-        alert("Invalid pair or quantity format: " + pair);
+        alert("Invalid symbol or quantity format");
     }
 };
 
 var adjust = function (ccy, amount) {
-    if (portfolio[ccy] === undefined || portfolio[ccy] === '') {
+    if (portfolio[ccy] === undefined || portfolio[ccy] === '' || portfolio[ccy] === null) {
         portfolio[ccy] = amount;
     } else {
         portfolio[ccy] += amount;
@@ -200,76 +199,47 @@ var computePnl = function () {
     var ccy;
     var quantity;
     var sum = 0;
-    var usdvalue;
     for (ccy in portfolio) {
         quantity = portfolio[ccy];
-        usdvalue = toUsdValue(ccy, quantity);
-        sum += usdvalue;
+        sum += toUsdValue(ccy, quantity);
     }
 
     return sum;
 };
 
-var toUsdValue = function (ccy, quantity) {
-    return quantity * parseFloat(getUsdQuote(ccy));
-};
+var toUsdValue = function (xxx, quantity) {
+    var ccy1, ccy2, q, i, symbol, price;
 
-var getUsdQuote = function (ccy) {
-    if (ccy === 'usd') {
-        return 1;
-    }
+    if (xxx === 'USD') {
+        return quantity;
+    } else {
+        // lookup USDxxx or xxxUSD quote
+        for (i = 0; i < quote_list.length; i += 1) {
+            q = quote_list[i];
+            symbol = q['symbol'];
+            price = q['price'];
 
-    var pair;
-    var ccy1;
-    var ccy2;
-    var quote;
-    for (pair in quotes['values']) {
-        ccy1 = pair.substr(0, 3);
-        ccy2 = pair.substr(3, 3);
-        quote = quotes['values'][pair];
+            ccy1 = symbol.substr(0, 3);
+            ccy2 = symbol.substr(3, 3);
 
-        if (ccy1 === 'usd' && ccy2 === ccy) {
-            return 1 / quote['value'];
-        } else if (ccy1 === ccy && ccy2 === 'usd') {
-            return quote['value'];
-        }
-    }
-
-    return 0;
-};
-
-var getYourPair = function () {
-    var pairname = getPairName();
-    return lookupPairByName(pairname);
-};
-
-var getPairName = function () {
-    return document.getElementById('your-pair').value;
-};
-
-var lookupPairByName = function (pairname) {
-    var pair;
-    var q;
-    var values;
-
-    if (quotes) {
-        values = quotes['values'];
-        if (values) {
-            for (pair in values) {
-                q = values[pair];
-                if (pairname === q['name']) {
-                    return pair;
-                }
+            if (ccy1 === 'USD' && ccy2 === xxx) {
+                return 1 / price;
+            } else if (ccy1 === xxx && ccy2 === 'USD') {
+                return price;
             }
         }
-    }
 
-    return '';
+        return 0; // todo handle properly case when we have no USD equivalent for xxx
+    }
 };
 
-var createPortfolioCurrencyElement = function (ccyname, position) {
+var getYourSymbol = function () {
+    return document.getElementById('your-symbol').value;
+};
+
+var createPortfolioCurrencyElement = function (ccy, position) {
     return '<p>'
-        + ccyname + ' ' + position.toFixed(2)
+        + ccy + ' ' + position.toFixed(2)
         + '</p>';
 };
 
@@ -290,13 +260,11 @@ var createPortfolioElement = function () {
     str += createPortfolioHeaderElement();
 
     var ccy;
-    var ccyname;
     var position;
     for (ccy in portfolio) {
-        ccyname = ccys[ccy];
         position = portfolio[ccy];
 
-        str += createPortfolioCurrencyElement(ccyname, position);
+        str += createPortfolioCurrencyElement(ccy, position);
     }
 
     return str;
@@ -327,19 +295,19 @@ var updatePortfolioView = function () {
     document.getElementById('your-portfolio').innerHTML = createPortfolioElement();
 };
 
-var computeYourRate = function () {
-    var yourQuantity = getQuantity();
-    var yourPair = getYourPair();
+var computeYourPrice = function () {
+    var yourQuantity = getYourQuantity();
+    var yourSymbol = getYourSymbol();
     var yourQuote;
-    var yourRate;
+    var yourPrice;
 
-    if (yourPair && yourQuantity > 0) {
-        yourQuote = quotes['values'][yourPair];
+    if (yourSymbol && yourQuantity > 0) {
+        yourQuote = quote_map[yourSymbol];
 
         if (yourQuote) {
-            yourRate = yourQuote['value']
-            if (yourRate) {
-                return yourRate;
+            yourPrice = yourQuote['price'];
+            if (yourPrice) {
+                return yourPrice;
             }
         }
     }
@@ -347,70 +315,53 @@ var computeYourRate = function () {
     return 'N/A';
 };
 
-var updateYourRate = function () {
-    document.getElementById('your-rate').innerHTML = computeYourRate();
+var updateYourPrice = function () {
+    document.getElementById('your-price').innerHTML = computeYourPrice();
 };
 
 
-function updatePairsList() {
-    var input, filter, ul, li, a, i;
-
+function updateSymbolList() {
+    var i, q, symbol;
     var str = '';
+    var input, filter, ul, li, a;
 
-    var count;
+    for (i = 0; i < quote_list.length; i += 1) {
+        q = quote_list[i];
+        symbol = q['symbol'];
 
-    if (quotes) {
-        var values = quotes['values'];
-        if (values) {
-            var pair;
-            if (values) {
-                for (pair in values) {
-                    str += '<li>' + values[pair]['name'] + '</li>';
-                }
-            }
+        str += '<li>' + symbol + '</li>';
+    }
 
-            document.getElementById('pairs-list').innerHTML = str;
+    document.getElementById('symbol-list').innerHTML = str;
 
+    // show only those matching user choice
+    input = document.getElementById('your-symbol');
+    if (input && input.value) {
+        filter = input.value.toUpperCase();
+    } else {
+        filter = '';
+    }
 
-            // show only those matching user choice
-            input = document.getElementById('your-pair');
-            if (input.value) {
-                filter = input.value.toUpperCase();
-            } else {
-                filter = '';
-            }
-
-            ul = document.getElementById('pairs-list');
-            li = ul.getElementsByTagName('li');
-            count = 0;
-            for (i = 0; i < li.length; i += 1) {
-                a = li[i];
-                if (filter && a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-                    a.style.display = '';
-                    count += 1;
-                } else {
-                    a.style.display = 'none';
-                }
-            }
-
-            // in case exact match, hide all items
-            if (count === 1) {
-                for (i = 0; i < li.length; i += 1) {
-                    a = li[i];
-                    a.style.display = 'none';
-                }
-            }
-
+    ul = document.getElementById('symbol-list');
+    li = ul.getElementsByTagName('li');
+    for (i = 0; i < li.length; i += 1) {
+        a = li[i];
+        if (filter && a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+            a.style.display = '';
+        } else {
+            a.style.display = 'none';
         }
     }
+
+    updateYourPrice();
 }
 
 
-var selectPair = function (event) {
+var selectSymbol = function (event) {
     var target = event.target;
 
-    document.getElementById('your-pair').value = target.innerHTML;
-    updatePairsList();
+    document.getElementById('your-symbol').value = target.innerHTML;
+    updateSymbolList();
 };
 
 var updateHistoryView = function () {
@@ -418,17 +369,87 @@ var updateHistoryView = function () {
     var str = '';
     var operation;
 
-    for (i = 0; i < history.length; i += 1) {
-        operation = history[i];
+    for (i = 0; i < operations.length; i += 1) {
+        operation = operations[i];
 
-        str += operation['time'] + ' '
+        str += operation['timestamp'] + ' '
             + 'You '
             + operation['side'] + ' '
             + operation['quantity'] + ' '
-            + operation['pairname'] + ' '
-            + ' @ ' + operation['rate']
+            + operation['symbol'] + ' '
+            + ' @ ' + operation['price']
             + '\n';
     }
 
     document.getElementById('your-history-textarea').value = str;
+};
+
+var startPolling = function () {
+    poll();
+};
+
+var poll = function () {
+    var request = new XMLHttpRequest();
+
+    var pairsString = '';
+    var i;
+    for (i = 0; i < symbols.length; i += 1) {
+        pairsString += symbols[i];
+        if (i < symbols.length - 1) {
+            pairsString += ',';
+        }
+    }
+
+    var url = 'https://forex.1forge.com/1.0.2/quotes?pairs=' + pairsString + '&api_key=' + secret['1forge.com']['api_key'];
+    request.open('GET', url, true);
+
+    request.onreadystatechange = function () {
+        var forge_quote_array;
+        var i;
+        var forge_quote;
+        var quote;
+        var symbol;
+        var timestamp;
+        var price;
+        var date;
+
+        if (request.readyState === XMLHttpRequest.DONE) {
+            if (request.status === 200) {
+                forge_quote_array = JSON.parse(request.responseText);
+
+                quote_list = [];
+                quote_map = {};
+
+                for (i = 0; i < forge_quote_array.length; i += 1) {
+                    forge_quote = forge_quote_array[i];
+                    symbol = forge_quote['symbol'];
+                    price = forge_quote['price'];
+
+                    // todo temp since market is closed now
+                    timestamp = forge_quote['timestamp']; // unix time in seconds
+                    // date = new Date(timestamp * 1000);
+                    date = new Date();
+
+                    quote = {'symbol': symbol, 'price': price, 'timestamp': date};
+                    quote_list.push(quote);
+                    quote_map[symbol] = quote;
+                }
+
+                updateQuotesView();
+                updatePortfolioView();
+                updateSymbolList();
+                updateYourPrice();
+
+                // schedule next poll
+                setTimeout(poll, pollInterval);
+
+            } else {
+                console.log("Some error with request, status = " + request.status);
+                console.log(request);
+                // todo schedule next poll???
+            }
+        }
+    };
+
+    request.send();
 };

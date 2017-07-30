@@ -82,20 +82,16 @@
             border-bottom: 2px solid black;
         }
 
-        #your-pair {
+        #your-symbol {
             font-size: 1em;
             padding: 1em;
             border: 1px solid grey;
             margin-bottom: 1em;
         }
 
-        #pairs-list {
+        #symbol-list li {
             list-style-type: none;
-            padding: 0;
             margin: 0;
-        }
-
-        #pairs-list li {
             padding: 1em;
             text-decoration: none;
             font-size: 1em;
@@ -142,21 +138,21 @@
             <div id="your-order-choice">
 
                 Currency pair:
-                <input type="text" id="your-pair" onkeyup="updatePairsList()"
+                <input id="your-symbol" onkeyup="updateSymbolList()"
                        placeholder="Please start typing currency pair.">
-                <ul id="pairs-list">
+                <ul id="symbol-list">
                 </ul>
 
 
                 <p>
                     Quantity:
-                    <input id="your-quantity" type="text" onchange="updateYourRate()"
+                    <input id="your-quantity" onkeyup="updateYourPrice()"
                            placeholder="Please enter quantity.">
                 </p>
 
                 <p>
                     Rate:
-                    <output id="your-rate">N/A</output>
+                    <output id="your-price">N/A</output>
                 </p>
             </div>
 
@@ -173,7 +169,7 @@
 
         <h3>Your history</h3>
         <div id="your-history">
-            <textarea readonly id="your-history-textarea">
+            <textarea readonly id="your-history-textarea" title="history" rows="10">
 
             </textarea>
         </div>
