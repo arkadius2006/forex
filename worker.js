@@ -16,7 +16,7 @@ var getQuote = function () {
 
 
 var status = 'not-working';
-var quotes = [];
+var quotes = {};
 
 var startPolling = function () {
     poll();
@@ -25,21 +25,22 @@ var startPolling = function () {
 var pollInterval = 60000;
 
 var poll = function () {
-    quotes = [];
+    quotes = {};
 
     var now = new Date();
     var expiry = new Date(now.getTime() + pollInterval);
     var i;
     var pair;
-    var quote;
-    var name;
 
+    var values = {};
     for (i = 0; i < pairs.length; i += 1) {
         pair = pairs[i];
-        name = names[pair];
-        quote = {'pair': pair, 'name': name, 'lastUpdated': now, 'expiry': expiry, 'value': getQuote()};
-        quotes.push(quote);
+        values[pair] = {'pair': pair, 'name': names[pair], 'value': getQuote()};
     }
+
+    quotes['values'] = values;
+    quotes['lastUpdated'] = now;
+    quotes['expiry'] = expiry;
 
     setTimeout(poll, pollInterval);
 };

@@ -1,29 +1,30 @@
 // data structures
+var ccys = {
+    'usd': 'USD',
+    'jpy': 'JPY',
+    'gbp': 'GBP',
+    'eur': 'EUR'
+};
+
+
 var portfolio = {};
 
-var quotes = {};
+var quotes = undefined;
 
 var worker = new Worker('worker.js');
 
 worker.onmessage = function (e) {
     var response = e.data;
     var responseType = response['responseType'];
-    var i;
-    var q;
-    var pair;
 
     switch (responseType) {
         case 'quotes': {
-            var newQuotes = response['quotes'];
-
-            for (i = 0; i < newQuotes.length; i += 1) {
-                q = newQuotes[i];
-                pair = q['pair'];
-                quotes[pair] = q;
-            }
+            quotes = response['quotes'];
 
             updateQuotesView();
-            updatePnl();
+            updatePortfolioView();
+            updatePairsList();
+            updateYourRate();
             break;
         }
 
@@ -34,47 +35,60 @@ worker.onmessage = function (e) {
 };
 
 var updateQuotesView = function () {
+    document.getElementById('your-quotes').innerHTML = createQuotesElement();
+};
+
+var createQuotesElement = function () {
     var str = '';
     var pair;
     var q;
-    var quote;
-    for (pair in quotes) {
-        q = quotes[pair];
-        quote = {'pair': pair, 'name': q['name'], 'value': q['value'], 'lastUpdated': q['lastUpdated'], 'expiry': q['expiry']};
 
-        str += createQuoteElement(quote);
+    if (quotes) {
+        var values = quotes['values'];
+        if (values) {
+            for (pair in values) {
+                q = values[pair];
+                str += createQuoteElement(q['name'], q['value']);
+            }
+        }
+
+        str += createExpiryElement(quotes['lastUpdated'], quotes['expiry']);
     }
 
-    document.getElementById('article').innerHTML = str;
+    return str;
 };
 
-var createQuoteElement = function (quote) {
-    var name = quote['name'];
-    var value = quote['value'];
-    var lastUpdated = quote['lastUpdated'];
-
-    var exp = quote['expiry'];
-    var now = new Date();
-    var diff_millis = exp - now;
-    var diff_seconds = (diff_millis / 1000).toFixed(0);
-
-
-    return '<div>' +
-        '<p>'
+var createQuoteElement = function (name, value) {
+    return '<p>'
         + name + ' = ' + value
-        + ', '
-        + 'expires in ' + diff_seconds + ' sec'
-        + '</p>'
-        + '</div>';
+        + '</p>';
+};
+
+var createExpiryElement = function (lastUpdated, expiry) {
+    var now = new Date();
+    var seconds_to_expiry = ((expiry.getTime() - now.getTime()) / 1000).toFixed(0);
+
+    return '<p>'
+        + 'Last updated: ' + lastUpdated
+        + ", expires in " + seconds_to_expiry + ' sec'
+        + '</p>';
 };
 
 var init = function () {
+    try {
+        updateQuotesView();
+        updatePortfolioView();
+        updatePairsList();
+        updateYourRate();
+    } catch (e) {
+        alert(JSON.stringify(e));
+    }
+
     worker.postMessage({'requestType': 'startPolling'});
-    updatePnl();
 };
 
 var getQuantity = function () {
-    var str = document.getElementById('quantity').value;
+    var str = document.getElementById('your-quantity').value;
     var num = parseFloat(str);
     if (num > 0) {
         return num;
@@ -93,25 +107,26 @@ var buy = function () {
     var expiry;
     var decision;
     var now;
-    var value;
+    var rate;
     var ccy1 = pair.substr(0, 3);
     var ccy2 = pair.substr(3, 3);
 
+    expiry = new Date(quotes['expiry'].getTime());
+
     if (pair && quantity > 0) {
         // make snapshot of shared vars
-        quote = quotes[pair];
-        value = quote['value'] + '';
-        expiry = new Date(quote['expiry'].getTime());
+        quote = quotes['values'][pair];
+        rate = quote['value'] + '';
 
-        decision = confirm("Do you want to buy " + quantity + " " + pairname + " @ " + value + "?");
+        decision = confirm("Do you want to buy " + quantity + " " + pairname + " @ " + rate + "?");
         if (decision) {
             // check expiry
             now = new Date();
             if (now.getTime() < expiry.getTime()) {
                 adjust(ccy1, quantity);
-                adjust(ccy2, -quantity * value);
+                adjust(ccy2, -quantity * rate);
 
-                updatePnl();
+                updatePortfolioView();
             } else {
                 alert('Quote already expired, please submit new order');
             }
@@ -123,26 +138,40 @@ var buy = function () {
 
 
 var sell = function () {
+    var pairname = getPairName();
+    var pair = lookupPairByName(pairname);
     var quantity = getQuantity();
-    if (quantity > 0) {
-        // make snapshot of shared vars
-        var value = quote['value'] + '';
-        var expiry = new Date(quote['expiry'].getTime());
 
-        var decision = confirm("Do you want to sell " + quantity + " USDJPY @ " + value + "?");
+    var quote;
+    var expiry;
+    var decision;
+    var now;
+    var rate;
+    var ccy1 = pair.substr(0, 3);
+    var ccy2 = pair.substr(3, 3);
+
+    expiry = new Date(quotes['expiry'].getTime());
+
+    if (pair && quantity > 0) {
+        // make snapshot of shared vars
+        quote = quotes['values'][pair];
+        rate = quote['value'] + '';
+
+        decision = confirm("Do you want to sell " + quantity + " " + pairname + " @ " + rate + "?");
         if (decision) {
-            //check expiry
-            var now = new Date();
+            // check expiry
+            now = new Date();
             if (now.getTime() < expiry.getTime()) {
-                portfolio.usd -= quantity;
-                portfolio.jpy += quantity * value;
+                adjust(ccy1, -quantity);
+                adjust(ccy2, quantity * rate);
+
+                updatePortfolioView();
             } else {
                 alert('Quote already expired, please submit new order');
             }
         }
-
     } else {
-        alert("Invalid quantity format");
+        alert("Invalid pair or quantity format: " + pair);
     }
 };
 
@@ -158,7 +187,7 @@ var formatQuantity = function (quantity) {
     return quantity.toFixed(2);
 };
 
-var updatePnl = function() {
+var computePnl = function () {
     var ccy;
     var quantity;
     var sum = 0;
@@ -169,7 +198,7 @@ var updatePnl = function() {
         sum += usdvalue;
     }
 
-    document.getElementById('pnl').textContent = formatQuantity(sum) + " USD";
+    return sum;
 };
 
 var toUsdValue = function (ccy, quantity) {
@@ -185,13 +214,13 @@ var getUsdQuote = function (ccy) {
     var ccy1;
     var ccy2;
     var quote;
-    for (pair in quotes) {
+    for (pair in quotes['values']) {
         ccy1 = pair.substr(0, 3);
         ccy2 = pair.substr(3, 3);
-        quote = quotes[pair];
+        quote = quotes['values'][pair];
 
         if (ccy1 === 'usd' && ccy2 === ccy) {
-            return 1/quote['value'];
+            return 1 / quote['value'];
         } else if (ccy1 === ccy && ccy2 === 'usd') {
             return quote['value'];
         }
@@ -200,19 +229,143 @@ var getUsdQuote = function (ccy) {
     return 0;
 };
 
+var getYourPair = function () {
+    var pairname = getPairName();
+    return lookupPairByName(pairname);
+};
+
 var getPairName = function () {
-    return document.getElementById('pair-name').value;
+    return document.getElementById('your-pair').value;
 };
 
 var lookupPairByName = function (pairname) {
     var pair;
     var q;
-    for (pair in quotes) {
-        q = quotes[pair];
-        if (pairname === q['name']) {
-            return pair;
+    var values;
+
+    if (quotes) {
+        values = quotes['values'];
+        if (values) {
+            for (pair in values) {
+                q = values[pair];
+                if (pairname === q['name']) {
+                    return pair;
+                }
+            }
         }
     }
 
     return '';
+};
+
+var createPortfolioCurrencyElement = function (ccyname, position) {
+    return '<p>'
+        + ccyname + ' ' + position.toFixed(2)
+        + '</p>';
+};
+
+var createPortfolioHeaderElement = function () {
+    return '<p>'
+        + 'Currency' + ' ' + 'Position'
+        + '</p>';
+};
+
+var createPortfolioElement = function () {
+    var str = '';
+    str += createPnlElement();
+    str += createPortfolioHeaderElement();
+
+    var ccy;
+    var ccyname;
+    var position;
+    for (ccy in portfolio) {
+        ccyname = ccys[ccy];
+        position = portfolio[ccy];
+
+        str += createPortfolioCurrencyElement(ccyname, position);
+    }
+
+    return str;
+};
+
+var createPnlElement = function () {
+    var pnl = computePnl();
+    var str = formatQuantity(pnl) + " USD";
+    return '<p>'
+        + 'Your PnL is ' + str
+        + '</p>';
+};
+
+var updatePortfolioView = function () {
+    document.getElementById('your-portfolio').innerHTML = createPortfolioElement();
+};
+
+var computeYourRate = function () {
+    var yourQuantity = getQuantity();
+    var yourPair = getYourPair();
+    var yourQuote;
+    var yourRate;
+
+    if (yourPair && yourQuantity > 0) {
+        yourQuote = quotes['values'][yourPair];
+
+        if (yourQuote) {
+            yourRate = yourQuote['value']
+            if (yourRate) {
+                return yourRate;
+            }
+        }
+    }
+
+    return 'N/A';
+};
+
+var updateYourRate = function () {
+    document.getElementById('your-rate').innerHTML = computeYourRate();
+};
+
+
+function updatePairsList() {
+    var input, filter, ul, li, a, i;
+
+    var str = '';
+
+    if (quotes) {
+        var values = quotes['values'];
+        if (values) {
+            var pair;
+            if (values) {
+                for (pair in values) {
+                    str += '<li>' + values[pair]['name'] + '</li>';
+                }
+            }
+
+            document.getElementById('pairs-list').innerHTML = str;
+
+
+            // show only those matching user choice
+            input = document.getElementById('your-pair');
+            if (input.value) {
+                filter = input.value.toUpperCase();
+            } else {
+                filter = '';
+            }
+
+            ul = document.getElementById('pairs-list');
+            li = ul.getElementsByTagName('li');
+            for (i = 0; i < li.length; i += 1) {
+                a = li[i];
+                if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                    a.style.display = '';
+                } else {
+                    a.style.display = 'none';
+                }
+            }
+        }
+    }
+}
+
+
+var selectPair = function () {
+    alert('TO be implemented');
 };

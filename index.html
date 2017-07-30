@@ -26,7 +26,8 @@
         }
 
         #buttons {
-            margin: 0;
+            margin-top: 2em;
+            margin-bottom: 2em;
             text-align: center;
             width: 100%;
         }
@@ -56,36 +57,70 @@
             background-color: white;
         }
 
-        section {
-            text-align: left;
-            font-size: 1em;
-            padding: 1em;
-            border-bottom: 2px solid black;
-        }
-
-        section p {
-            font-size: 1.5em;
-            font-family: "Times New Roman", serif;
-        }
-
         article {
             padding: 1em;
-        }
-
-        article p {
-            text-align: center;
             font-size: 1em;
             font-family: "Lucida Console", Monaco, monospace;
         }
 
-        #quantity {
-            font-size: 1em;
-            margin: 1em;
+        #your-order {
+            border: 2px solid red;
         }
 
-        #inputdiv {
+        #your-quotes {
+            border: 2px solid red;
+        }
+
+        #your-order-choice {
+            margin-top: 2em;
             text-align: center;
         }
+
+        #your-quotes {
+            text-align: center;
+            border: 2px solid red;
+        }
+
+        #your-portfolio{
+            text-align: center;
+            border: 2px solid red;
+        }
+
+        #your-pair {
+            background: url('/css/searchicon.png') no-repeat 1em 1em;
+            font-size: 1em;
+            padding: 1em;
+            border: 1px solid grey;
+            margin-bottom: 1em;
+        }
+
+        #pairs-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #pairs-list li {
+            border: 1px solid #ddd;
+            margin-top: -1px;
+            background-color: lightgrey;
+            padding: 1em;
+            text-decoration: none;
+            font-size: 1.5em;
+            color: black;
+        }
+
+        #pairs-list li:hover {
+            background-color: darkgrey;
+        }
+
+        #your-quantity {
+            font-size: 1em;
+            padding: 1em;
+            border: 1px solid grey;
+            margin-bottom: 1em;
+        }
+
     </style>
 </head>
 <body onload="init()">
@@ -96,28 +131,35 @@
         <h1>Forex trading workbench demo</h1>
     </header>
 
-    <section>
-        <p>Your PnL is: <output id="pnl"></output></p>
-    </section>
+    <article>
+        <h3>Your quotes</h3>
+        <div id="your-quotes">
 
-    <article id="article">
-    </article>
+        </div>
 
-    <nav>
-        <div id="operation">
-            <div id="inputdiv">
-                Pair:
-                <input id="pair-name" type="text">
+        <h3>Your order</h3>
+        <div id="your-order">
+            <div id="your-order-choice">
+                <input type="text" id="your-pair" onkeyup="updatePairsList()" placeholder="Search for currency pair..">
+                <ul id="pairs-list" onclick="selectPair()">
+                </ul>
                 Quantity:
-                <input id="quantity" type="text">
+                <input id="your-quantity" type="text" onchange="updateYourRate()">
+                Rate:
+                <output id="your-rate">N/A</output>
             </div>
+
             <div id="buttons">
                 <button id="buy-button" onclick="buy()">buy</button>
                 <button id="sell-button" onclick="sell()">sell</button>
             </div>
+        </div>
+
+        <h3>Your portfolio</h3>
+        <div id="your-portfolio">
 
         </div>
-    </nav>
+    </article>
 
     <footer>Copyright &copy Arkady Seletsky</footer>
 </div>
