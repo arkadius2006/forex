@@ -1,2 +1,2 @@
-# js-worker-quote-demo
+# forex
 Demo live quotes forex UI
