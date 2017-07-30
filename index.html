@@ -64,11 +64,7 @@
         }
 
         #your-order {
-            border: 2px solid red;
-        }
-
-        #your-quotes {
-            border: 2px solid red;
+            border-bottom: 2px solid black;
         }
 
         #your-order-choice {
@@ -78,16 +74,15 @@
 
         #your-quotes {
             text-align: center;
-            border: 2px solid red;
+            border-bottom: 2px solid black;
         }
 
-        #your-portfolio{
+        #your-portfolio {
             text-align: center;
-            border: 2px solid red;
+            border-bottom: 2px solid black;
         }
 
         #your-pair {
-            background: url('/css/searchicon.png') no-repeat 1em 1em;
             font-size: 1em;
             padding: 1em;
             border: 1px solid grey;
@@ -101,12 +96,9 @@
         }
 
         #pairs-list li {
-            border: 1px solid #ddd;
-            margin-top: -1px;
-            background-color: lightgrey;
             padding: 1em;
             text-decoration: none;
-            font-size: 1.5em;
+            font-size: 1em;
             color: black;
         }
 
@@ -140,13 +132,24 @@
         <h3>Your order</h3>
         <div id="your-order">
             <div id="your-order-choice">
-                <input type="text" id="your-pair" onkeyup="updatePairsList()" placeholder="Search for currency pair..">
-                <ul id="pairs-list" onclick="selectPair()">
+
+                Currency pair:
+                <input type="text" id="your-pair" onkeyup="updatePairsList()"
+                       placeholder="Please start typing currency pair.">
+                <ul id="pairs-list">
                 </ul>
-                Quantity:
-                <input id="your-quantity" type="text" onchange="updateYourRate()">
-                Rate:
-                <output id="your-rate">N/A</output>
+
+
+                <p>
+                    Quantity:
+                    <input id="your-quantity" type="text" onchange="updateYourRate()"
+                           placeholder="Please enter quantity.">
+                </p>
+
+                <p>
+                    Rate:
+                    <output id="your-rate">N/A</output>
+                </p>
             </div>
 
             <div id="buttons">

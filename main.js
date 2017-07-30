@@ -68,9 +68,8 @@ var createExpiryElement = function (lastUpdated, expiry) {
     var now = new Date();
     var seconds_to_expiry = ((expiry.getTime() - now.getTime()) / 1000).toFixed(0);
 
-    return '<p>'
-        + 'Last updated: ' + lastUpdated
-        + ", expires in " + seconds_to_expiry + ' sec'
+    return '<p align="right">'
+        + "Will expire in " + seconds_to_expiry + ' sec'
         + '</p>';
 };
 
@@ -80,6 +79,8 @@ var init = function () {
         updatePortfolioView();
         updatePairsList();
         updateYourRate();
+
+        document.getElementById('pairs-list').onclick = selectPair;
     } catch (e) {
         alert(JSON.stringify(e));
     }
@@ -271,6 +272,11 @@ var createPortfolioHeaderElement = function () {
 };
 
 var createPortfolioElement = function () {
+    if (isPortfolioEmpty()) {
+        return 'You portfolio is empty. Please submit an order.';
+    }
+
+    // non-empty case
     var str = '';
     str += createPnlElement();
     str += createPortfolioHeaderElement();
@@ -286,6 +292,19 @@ var createPortfolioElement = function () {
     }
 
     return str;
+};
+
+var isPortfolioEmpty = function () {
+    var item;
+    if (portfolio) {
+        for (item in portfolio) {
+            if (portfolio.hasOwnProperty(item)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 };
 
 var createPnlElement = function () {
@@ -330,6 +349,8 @@ function updatePairsList() {
 
     var str = '';
 
+    var count;
+
     if (quotes) {
         var values = quotes['values'];
         if (values) {
@@ -353,19 +374,33 @@ function updatePairsList() {
 
             ul = document.getElementById('pairs-list');
             li = ul.getElementsByTagName('li');
+            count = 0;
             for (i = 0; i < li.length; i += 1) {
                 a = li[i];
-                if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                if (filter && a.innerHTML.toUpperCase().indexOf(filter) > -1) {
                     a.style.display = '';
+                    count += 1;
                 } else {
                     a.style.display = 'none';
                 }
             }
+
+            // in case exact match, hide all items
+            if (count === 1) {
+                for (i = 0; i < li.length; i += 1) {
+                    a = li[i];
+                    a.style.display = 'none';
+                }
+            }
+
         }
     }
 }
 
 
-var selectPair = function () {
-    alert('TO be implemented');
+var selectPair = function (event) {
+    var target = event.target;
+
+    document.getElementById('your-pair').value = target.innerHTML;
+    updatePairsList();
 };
