@@ -1,135 +1,250 @@
 <!DOCTYPE html>
-<html lang="en" ng-app>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="Forex workbench">
+    <meta name="author" content="Arkady Seletsky">
+    <link rel="icon" href="favicon.ico">
+
     <title>Forex workbench</title>
 
-    <link rel="stylesheet" href="css/bootstrap.css"/>
-    <script type="text/javascript" src="angular.min.js"></script>
-    <script type="text/javascript" src="bootstrap.min.js"></script>
-
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="forex.css" rel="stylesheet">
 </head>
 
 <body>
 
-<div class="panel panel-primary" ng-controller="quotesController" style="width: 200px;margin: 20px">
-    <div class="panel-heading">
-        Quotes
-    </div>
-
-    <p>
-        <input type="text" ng-model="searchForSymbol" placeholder="Type to search.." style="width: 100%; padding: 10px">
-    </p>
-
-    <div ng-repeat="quote in quote_list | filter:{ 'symbol': searchForSymbol}" style="padding: 10px">
-        <div style="float: right">
-            {{quote.price}}
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Forex</a>
         </div>
-        {{quote.symbol}}
+
+
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Profile</a></li>
+                <li><a href="#">Help</a></li>
+            </ul>
+            <form class="navbar-form navbar-right">
+                <input type="text" class="form-control" placeholder="Search...">
+            </form>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+                <li><a href="#quotes">Quotes</a></li>
+                <li><a href="#positions">Positions</a></li>
+                <li><a href="#history">History</a></li>
+            </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h1 class="page-header">Dashboard</h1>
+
+            <p class="lead">This is a demo single page application (SPA) featuring FX trading user interface.
+                It uses live market data feed, but all transactions are simulated.</p>
+
+            <div class="row placeholders">
+                <div class="col-xs-6 col-sm-3 placeholder">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
+                         width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+                    <h4>Label</h4>
+                    <span class="text-muted">Something else</span>
+                </div>
+                <div class="col-xs-6 col-sm-3 placeholder">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
+                         width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+                    <h4>Label</h4>
+                    <span class="text-muted">Something else</span>
+                </div>
+                <div class="col-xs-6 col-sm-3 placeholder">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
+                         width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+                    <h4>Label</h4>
+                    <span class="text-muted">Something else</span>
+                </div>
+                <div class="col-xs-6 col-sm-3 placeholder">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
+                         width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+                    <h4>Label</h4>
+                    <span class="text-muted">Something else</span>
+                </div>
+            </div>
+
+            <h2 class="sub-header" id="quotes">Live quotes</h2>
+            <input type="text" class="form-control" placeholder="Search..." size="10" style="width: 200px">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Price</th>
+                        <th>Expires</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>USDJPY</td>
+                        <td>101.1</td>
+                        <td>23 sec</td>
+                    </tr>
+                    <tr>
+                        <td>EURUSD</td>
+                        <td>1.23</td>
+                        <td>6 sec</td>
+                    </tr>
+                    <tr>
+                        <td>EURUSD</td>
+                        <td>1.23</td>
+                        <td>6 sec</td>
+                    </tr>
+                    <tr>
+                        <td>EURUSD</td>
+                        <td>1.23</td>
+                        <td>6 sec</td>
+                    </tr>
+                    <tr>
+                        <td>EURUSD</td>
+                        <td>1.23</td>
+                        <td>6 sec</td>
+                    </tr>
+                    <tr>
+                        <td>EURUSD</td>
+                        <td>1.23</td>
+                        <td>6 sec</td>
+                    </tr>
+                    <tr>
+                        <td>EURUSD</td>
+                        <td>1.23</td>
+                        <td>6 sec</td>
+                    </tr>
+                    <tr>
+                        <td>EURUSD</td>
+                        <td>1.23</td>
+                        <td>6 sec</td>
+                    </tr>
+                    <tr>
+                        <td>EURUSD</td>
+                        <td>1.23</td>
+                        <td>6 sec</td>
+                    </tr>
+                    <tr>
+                        <td>EURUSD</td>
+                        <td>1.23</td>
+                        <td>6 sec</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-success btn-lg">Buy</button>
+                </div>
+                <div class="col-md-4">
+                    <label for="your-quantity">Your quantity</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="your-quantity">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-danger btn-lg">Sell</button>
+                </div>
+            </div>
+
+            <h2 class="sub-header" id="positions">Positions</h2>
+            <input type="text" class="form-control" placeholder="Search..." size="10" style="width: 200px">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Currency</th>
+                        <th>Position</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>USD</td>
+                        <td>100</td>
+                    </tr>
+                    <tr>
+                        <td>EUR</td>
+                        <td>100</td>
+                    </tr>
+                    <tr>
+                        <td>GBP</td>
+                        <td>100</td>
+                    </tr>
+                    <tr>
+                        <td>JPY</td>
+                        <td>100</td>
+                    </tr>
+                    <tr>
+                        <td>AUD</td>
+                        <td>100</td>
+                    </tr>
+                    <tr>
+                        <td>NZD</td>
+                        <td>100</td>
+                    </tr>
+                    <tr>
+                        <td>CHF</td>
+                        <td>100</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 class="sub-header" id="history">History</h2>
+            <input type="text" class="form-control" placeholder="Search..." size="10" style="width: 200px">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Time</th>
+                        <th>Symbol</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>1 Aug, 10:35:43</td>
+                        <td>USDJPY</td>
+                        <td>100</td>
+                        <td>101.2</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
     </div>
 </div>
 
-<script type="text/javascript">
-    var quotesController = function ($scope) {
-
-        $scope.symbols = ['EURUSD', 'USDJPY', 'GBPUSD', 'USDCHF', 'EURGBP', 'EURJPY', 'EURCHF', 'AUDUSD', 'USDCAD', 'NZDUSD'];
-
-        $scope.quote_list = [
-            {
-                'symbol': 'EURUSD',
-                'price': 1.23,
-                'timestamp': 12345678
-            },
-            {
-                'symbol': 'USDJPY',
-                'price': 1.23,
-                'timestamp': 12345678
-            },
-            {
-                'symbol': 'GBPUSD',
-                'price': 1.23,
-                'timestamp': 12345678
-            },
-            {
-                'symbol': 'USDCHF',
-                'price': 1.23,
-                'timestamp': 12345678
-            },
-            {
-                'symbol': 'EURGBP',
-                'price': 1.23,
-                'timestamp': 12345678
-            },
-            {
-                'symbol': 'EURJPY',
-                'price': 1.23,
-                'timestamp': 12345678
-            },
-            {
-                'symbol': 'EURCHF',
-                'price': 1.23,
-                'timestamp': 12345678
-            },
-            {
-                'symbol': 'AUDUSD',
-                'price': 1.23,
-                'timestamp': 12345678
-            },
-            {
-                'symbol': 'USDCAD',
-                'price': 1.23,
-                'timestamp': 12345678
-            },
-            {
-                'symbol': 'NZDUSD',
-                'price': 1.23,
-                'timestamp': 12345678
-            }
-        ];
-
-        $scope.position_list = [
-            {
-                'currency': 'USD',
-                'value': 100
-            },
-            {
-                'currency': 'EUR',
-                'value': -200
-            },
-            {
-                'currency': 'GBP',
-                'value': 300
-            }
-        ];
-
-        $scope.operation_list = [
-            {
-                'timestamp': 12345,
-                'symbol': 'USDJPY',
-                'side': 'buy',
-                'price': 100.2
-
-            },
-            {
-                'timestamp': 12345,
-                'symbol': 'EURUSD',
-                'side': 'sell',
-                'price': 1.54
-
-            },
-            {
-                'timestamp': 12345,
-                'symbol': 'GBPUSD',
-                'side': 'buy',
-                'price': 1.345
-
-            }
-
-        ];
-    };
-
-
-</script>
-
+<script src="jquery.min.js"></script>
+<script src="bootstrap.min.js"></script>
 </body>
 </html>
