@@ -1,11 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app>
 <head>
     <meta charset="UTF-8">
     <title>Forex workbench</title>
-    
+
+    <link rel="stylesheet" href="css/bootstrap.css"/>
+    <script type="text/javascript" src="angular.min.js"></script>
+    <script type="text/javascript" src="bootstrap.min.js"></script>
+
 </head>
+
 <body>
+
+<div class="panel panel-primary" ng-controller="quotesController" style="width: 200px;margin: 20px">
+    <div class="panel-heading">
+        Quotes
+    </div>
+
+    <p>
+        <input type="text" ng-model="searchForSymbol" placeholder="Type to search.." style="width: 100%; padding: 10px">
+    </p>
+
+    <div ng-repeat="quote in quote_list | filter:{ 'symbol': searchForSymbol}" style="padding: 10px">
+        <div style="float: right">
+            {{quote.price}}
+        </div>
+        {{quote.symbol}}
+    </div>
+</div>
+
+<script type="text/javascript">
+    var quotesController = function ($scope) {
+
+        $scope.symbols = ['EURUSD', 'USDJPY', 'GBPUSD', 'USDCHF', 'EURGBP', 'EURJPY', 'EURCHF', 'AUDUSD', 'USDCAD', 'NZDUSD'];
+
+        $scope.quote_list = [
+            {
+                'symbol': 'EURUSD',
+                'price': 1.23,
+                'timestamp': 12345678
+            },
+            {
+                'symbol': 'USDJPY',
+                'price': 1.23,
+                'timestamp': 12345678
+            },
+            {
+                'symbol': 'GBPUSD',
+                'price': 1.23,
+                'timestamp': 12345678
+            },
+            {
+                'symbol': 'USDCHF',
+                'price': 1.23,
+                'timestamp': 12345678
+            },
+            {
+                'symbol': 'EURGBP',
+                'price': 1.23,
+                'timestamp': 12345678
+            },
+            {
+                'symbol': 'EURJPY',
+                'price': 1.23,
+                'timestamp': 12345678
+            },
+            {
+                'symbol': 'EURCHF',
+                'price': 1.23,
+                'timestamp': 12345678
+            },
+            {
+                'symbol': 'AUDUSD',
+                'price': 1.23,
+                'timestamp': 12345678
+            },
+            {
+                'symbol': 'USDCAD',
+                'price': 1.23,
+                'timestamp': 12345678
+            },
+            {
+                'symbol': 'NZDUSD',
+                'price': 1.23,
+                'timestamp': 12345678
+            }
+        ];
+
+        $scope.position_list = [
+            {
+                'currency': 'USD',
+                'value': 100
+            },
+            {
+                'currency': 'EUR',
+                'value': -200
+            },
+            {
+                'currency': 'GBP',
+                'value': 300
+            }
+        ];
+
+        $scope.operation_list = [
+            {
+                'timestamp': 12345,
+                'symbol': 'USDJPY',
+                'side': 'buy',
+                'price': 100.2
+
+            },
+            {
+                'timestamp': 12345,
+                'symbol': 'EURUSD',
+                'side': 'sell',
+                'price': 1.54
+
+            },
+            {
+                'timestamp': 12345,
+                'symbol': 'GBPUSD',
+                'side': 'buy',
+                'price': 1.345
+
+            }
+
+        ];
+    };
+
+
+</script>
 
 </body>
 </html>
