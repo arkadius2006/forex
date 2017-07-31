@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -56,7 +56,7 @@
                 <li><a href="#history">History</a></li>
             </ul>
         </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" ng-controller="quotesController">
             <h1 class="page-header">Dashboard</h1>
 
             <p class="lead">This is a demo single page application (SPA) featuring FX trading user interface.
@@ -90,66 +90,23 @@
             </div>
 
             <h2 class="sub-header" id="quotes">Live quotes</h2>
-            <input type="text" class="form-control" placeholder="Search..." size="10" style="width: 200px">
+            <input type="text" class="form-control" placeholder="Search..." size="10" style="width: 200px" ng-model="quoteSearchForSymbol">
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                     <tr>
                         <th>Symbol</th>
                         <th>Price</th>
-                        <th>Expires</th>
+                        <th>Last updated</th>
+                        <th>Expires in</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>USDJPY</td>
-                        <td>101.1</td>
-                        <td>23 sec</td>
-                    </tr>
-                    <tr>
-                        <td>EURUSD</td>
-                        <td>1.23</td>
-                        <td>6 sec</td>
-                    </tr>
-                    <tr>
-                        <td>EURUSD</td>
-                        <td>1.23</td>
-                        <td>6 sec</td>
-                    </tr>
-                    <tr>
-                        <td>EURUSD</td>
-                        <td>1.23</td>
-                        <td>6 sec</td>
-                    </tr>
-                    <tr>
-                        <td>EURUSD</td>
-                        <td>1.23</td>
-                        <td>6 sec</td>
-                    </tr>
-                    <tr>
-                        <td>EURUSD</td>
-                        <td>1.23</td>
-                        <td>6 sec</td>
-                    </tr>
-                    <tr>
-                        <td>EURUSD</td>
-                        <td>1.23</td>
-                        <td>6 sec</td>
-                    </tr>
-                    <tr>
-                        <td>EURUSD</td>
-                        <td>1.23</td>
-                        <td>6 sec</td>
-                    </tr>
-                    <tr>
-                        <td>EURUSD</td>
-                        <td>1.23</td>
-                        <td>6 sec</td>
-                    </tr>
-                    <tr>
-                        <td>EURUSD</td>
-                        <td>1.23</td>
-                        <td>6 sec</td>
+                    <tr ng-repeat="quote in quote_list | filter:{ 'symbol': quoteSearchForSymbol}">
+                        <td>{{quote.symbol}}</td>
+                        <td>{{quote.price}}</td>
+                        <td>{{quote.timestamp}}</td>
+                        <td>{{quote.expiresInSeconds}} sec</td>
                     </tr>
                     </tbody>
                 </table>
@@ -160,9 +117,8 @@
                     <button type="button" class="btn btn-success btn-lg">Buy</button>
                 </div>
                 <div class="col-md-4">
-                    <label for="your-quantity">Your quantity</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="your-quantity">
+                    <div class="input-group-lg">
+                        <input type="text" class="form-control" id="your-quantity" placeholder="Quantity...">
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -171,7 +127,7 @@
             </div>
 
             <h2 class="sub-header" id="positions">Positions</h2>
-            <input type="text" class="form-control" placeholder="Search..." size="10" style="width: 200px">
+            <input type="text" class="form-control" placeholder="Type currency..." size="10" style="width: 200px" ng-model="positionSearchForCurrency">
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
@@ -182,59 +138,35 @@
                     </thead>
 
                     <tbody>
-                    <tr>
-                        <td>USD</td>
-                        <td>100</td>
-                    </tr>
-                    <tr>
-                        <td>EUR</td>
-                        <td>100</td>
-                    </tr>
-                    <tr>
-                        <td>GBP</td>
-                        <td>100</td>
-                    </tr>
-                    <tr>
-                        <td>JPY</td>
-                        <td>100</td>
-                    </tr>
-                    <tr>
-                        <td>AUD</td>
-                        <td>100</td>
-                    </tr>
-                    <tr>
-                        <td>NZD</td>
-                        <td>100</td>
-                    </tr>
-                    <tr>
-                        <td>CHF</td>
-                        <td>100</td>
+                    <tr ng-repeat="pos in position_list | filter:{ 'currency': positionSearchForCurrency}">
+                        <td>{{pos.currency}}</td>
+                        <td>{{pos.position}}</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
 
             <h2 class="sub-header" id="history">History</h2>
-            <input type="text" class="form-control" placeholder="Search..." size="10" style="width: 200px">
+            <input type="text" class="form-control" placeholder="Type symbol..." size="10" style="width: 200px" ng-model="operationSearchForSymbol">
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                     <tr>
-                        <th>#</th>
                         <th>Time</th>
                         <th>Symbol</th>
+                        <th>Side</th>
                         <th>Quantity</th>
                         <th>Price</th>
                     </tr>
                     </thead>
 
                     <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>1 Aug, 10:35:43</td>
-                        <td>USDJPY</td>
-                        <td>100</td>
-                        <td>101.2</td>
+                    <tr ng-repeat="operation in operation_list | filter:{ 'symbol': operationSearchForSymbol} | orderBy: 'timestamp'">
+                        <td>{{operation.timestamp}}</td>
+                        <td>{{operation.symbol}}</td>
+                        <td>{{operation.side}}</td>
+                        <td>{{operation.quantity}}</td>
+                        <td>{{operation.price}}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -246,5 +178,7 @@
 
 <script src="jquery.min.js"></script>
 <script src="bootstrap.min.js"></script>
+<script type="text/javascript" src="angular.min.js"></script>
+<script type="text/javascript" src="data.js"></script>
 </body>
 </html>

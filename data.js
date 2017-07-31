@@ -6,67 +6,77 @@ var quotesController = function ($scope) {
         {
             'symbol': 'EURUSD',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         },
         {
             'symbol': 'USDJPY',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         },
         {
             'symbol': 'GBPUSD',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         },
         {
             'symbol': 'USDCHF',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         },
         {
             'symbol': 'EURGBP',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         },
         {
             'symbol': 'EURJPY',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         },
         {
             'symbol': 'EURCHF',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         },
         {
             'symbol': 'AUDUSD',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         },
         {
             'symbol': 'USDCAD',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         },
         {
             'symbol': 'NZDUSD',
             'price': 1.23,
-            'timestamp': 12345678
+            'timestamp': 12345678,
+            'expiresInSeconds': 1
         }
     ];
 
     $scope.position_list = [
         {
             'currency': 'USD',
-            'value': 100
+            'position': 100
         },
         {
             'currency': 'EUR',
-            'value': -200
+            'position': -200
         },
         {
             'currency': 'GBP',
-            'value': 300
+            'position': 300
         }
     ];
 
@@ -75,6 +85,7 @@ var quotesController = function ($scope) {
             'timestamp': 12345,
             'symbol': 'USDJPY',
             'side': 'buy',
+            'quantity': 100,
             'price': 100.2
 
         },
@@ -82,6 +93,7 @@ var quotesController = function ($scope) {
             'timestamp': 12345,
             'symbol': 'EURUSD',
             'side': 'sell',
+            'quantity': 100,
             'price': 1.54
 
         },
@@ -89,8 +101,8 @@ var quotesController = function ($scope) {
             'timestamp': 12345,
             'symbol': 'GBPUSD',
             'side': 'buy',
+            'quantity': 100,
             'price': 1.345
-
         }
 
     ];
