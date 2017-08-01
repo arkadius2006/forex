@@ -1,2 +1,2 @@
 # forex
-Demo live quotes forex UI
+Demo single page application (SPA) featuring FX trading user interface.
