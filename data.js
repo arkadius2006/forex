@@ -33,6 +33,10 @@ var quotesController = function ($scope, $http) {
         if (decision) {
             order['timestamp'] = new Date();
             submitOrder(order);
+
+            // clear things
+            $scope.currentQuantity = '';
+            $scope.quoteSearchForSymbol = '';
         }
     };
 
@@ -51,6 +55,10 @@ var quotesController = function ($scope, $http) {
         if (decision) {
             order['timestamp'] = new Date();
             submitOrder(order);
+
+            // clear things
+            $scope.currentQuantity = '';
+            $scope.quoteSearchForSymbol = '';
         }
     };
 
