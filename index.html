@@ -33,14 +33,9 @@
 
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Dashboard</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href="#">Profile</a></li>
-                <li><a href="#">Help</a></li>
+                <li><a href="https://github.com/arkadius2006/forex">GitHub</a></li>
+                <li><a href="https://arkadius2006.github.io">Arkady Seletsky</a></li>
             </ul>
-            <form class="navbar-form navbar-right">
-                <input type="text" class="form-control" placeholder="Search...">
-            </form>
         </div>
     </div>
 </nav>
@@ -50,8 +45,8 @@
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
-                <li><a href="#quotes">Quotes</a></li>
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#quotes">Live quotes</a></li>
                 <li><a href="#positions">Positions</a></li>
                 <li><a href="#history">History</a></li>
             </ul>
@@ -63,34 +58,32 @@
                 It uses live market data feed, but all transactions are simulated.</p>
 
             <div class="row placeholders">
+
+
                 <div class="col-xs-6 col-sm-3 placeholder">
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
-                         width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-                    <h4>Label</h4>
-                    <span class="text-muted">Something else</span>
+                    <canvas id="london" width="200" height="200" style="background-color:#333"></canvas>
+                    <h4>London</h4>
+                    <span class="text-muted">Market is open</span>
                 </div>
                 <div class="col-xs-6 col-sm-3 placeholder">
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
-                         width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-                    <h4>Label</h4>
-                    <span class="text-muted">Something else</span>
+                    <canvas id="tokio" width="200" height="200" style="background-color:#333"></canvas>
+                    <h4>Tokio</h4>
+                    <span class="text-muted">Market is open</span>
                 </div>
                 <div class="col-xs-6 col-sm-3 placeholder">
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
-                         width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-                    <h4>Label</h4>
-                    <span class="text-muted">Something else</span>
+                    <canvas id="newyork" width="200" height="200" style="background-color:#333"></canvas>
+                    <h4>New York</h4>
+                    <span class="text-muted">Market is open</span>
                 </div>
                 <div class="col-xs-6 col-sm-3 placeholder">
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
-                         width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-                    <h4>Label</h4>
-                    <span class="text-muted">Something else</span>
+                    <canvas id="moscow" width="200" height="200" style="background-color:#333"></canvas>
+                    <h4>Moscow</h4>
+                    <span class="text-muted">Market is open</span>
                 </div>
             </div>
 
             <h2 class="sub-header" id="quotes">Live quotes</h2>
-            <input type="text" class="form-control" placeholder="Search..." size="10" style="width: 200px" ng-model="quoteSearchForSymbol">
+            <input type="text" class="form-control" placeholder="Type symbol..." size="10" style="width: 200px" ng-model="quoteSearchForSymbol">
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
@@ -182,6 +175,12 @@
 <script src="jquery.min.js"></script>
 <script src="bootstrap.min.js"></script>
 <script type="text/javascript" src="angular.min.js"></script>
+
+<script src="moment.js"></script>
+<script src="moment-with-locales.js"></script>
+<script src="moment-timezone-with-data.js"></script>
+<script src="moment-timezone.js"></script>
+
 <script type="text/javascript" src="data.js"></script>
 </body>
 </html>
