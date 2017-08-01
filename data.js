@@ -1,69 +1,8 @@
-var quotesController = function ($scope) {
+var quotesController = function ($scope, $http) {
 
     $scope.symbols = ['EURUSD', 'USDJPY', 'GBPUSD', 'USDCHF', 'EURGBP', 'EURJPY', 'EURCHF', 'AUDUSD', 'USDCAD', 'NZDUSD'];
 
-    $scope.quote_list = [
-        {
-            'symbol': 'EURUSD',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        },
-        {
-            'symbol': 'USDJPY',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        },
-        {
-            'symbol': 'GBPUSD',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        },
-        {
-            'symbol': 'USDCHF',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        },
-        {
-            'symbol': 'EURGBP',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        },
-        {
-            'symbol': 'EURJPY',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        },
-        {
-            'symbol': 'EURCHF',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        },
-        {
-            'symbol': 'AUDUSD',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        },
-        {
-            'symbol': 'USDCAD',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        },
-        {
-            'symbol': 'NZDUSD',
-            'price': 1.23,
-            'timestamp': 12345678,
-            'expiresInSeconds': 1
-        }
-    ];
+    $scope.quote_list = [];
 
     $scope.position_list = [];
 
@@ -97,7 +36,7 @@ var quotesController = function ($scope) {
         }
     };
 
-    $scope.sell = function() {
+    $scope.sell = function () {
         var order;
 
         order = getOrder();
@@ -161,7 +100,7 @@ var quotesController = function ($scope) {
             return undefined;
         }
 
-        return {'symbol' : theSymbol, 'price': thePrice, 'quantity': theQuantity};
+        return {'symbol': theSymbol, 'price': thePrice, 'quantity': theQuantity};
     };
 
     var adjust = function (ccy, amount) {
@@ -218,6 +157,105 @@ var quotesController = function ($scope) {
             'side': order['side'],
             'price': order['price']
         });
+
+        $scope.PnL = computePnl();
+    };
+
+
+    // 1forge.com api key
+    var secret = {
+        '1forge.com': {
+            'api_key': 'vO3LdQiJcUjzle3R8WcYj2I8v7QYMnPf'
+        }
+    };
+
+    var pairsString = '';
+    var i;
+    for (i = 0; i < $scope.symbols.length; i += 1) {
+        pairsString += $scope.symbols[i];
+        if (i < $scope.symbols.length - 1) {
+            pairsString += ',';
+        }
+    }
+
+    var pollInterval = 10000;
+
+    var processForgeQuotes = function (data) {
+        $scope.quote_list = [];
+
+        var i, q;
+        for (i = 0; i < data.length; i += 1) {
+            q = data[i];
+            $scope.quote_list.push(
+                {
+                    'symbol': q['symbol'],
+                    'price': q['price'],
+                    'timestamp': new Date()
+                }
+            );
+        }
+
+        $scope.PnL = computePnl();
+
+        // schedule new poll
+        setTimeout(requestForQuotes, pollInterval);
+    };
+
+    var requestForQuotes = function () {
+        $http({
+            method: 'GET',
+            url: 'https://forex.1forge.com/1.0.2/quotes?pairs=' + pairsString + '&api_key=' + secret['1forge.com']['api_key']
+        }).then(function successCallback(response) {
+            processForgeQuotes(response.data);
+        }, function errorCallback(response) {
+            console.log("Received error response: " + JSON.stringify(response));
+        });
+    };
+
+    requestForQuotes();
+
+    $scope.PnL = 0;
+
+    var computePnl = function () {
+        var sum = 0;
+        var i, pos;
+        var incr;
+        for (i = 0; i <  $scope.position_list.length; i += 1) {
+            pos = $scope.position_list[i];
+            incr = toUsdValue(pos['currency'], pos['position']);
+            sum += incr;
+        }
+
+        return sum;
+    };
+
+    var toUsdValue = function (xxx, quantity) {
+        var ccy1, ccy2, q, i, symbol, price;
+
+        if (xxx === 'USD') {
+            return quantity;
+        } else {
+            // lookup USDxxx or xxxUSD quote
+            for (i = 0; i < $scope.quote_list.length; i += 1) {
+                q = $scope.quote_list[i];
+                console.log(JSON.stringify(q));
+
+                symbol = q['symbol'];
+                price = q['price'];
+
+                ccy1 = symbol.substr(0, 3);
+                ccy2 = symbol.substr(3, 3);
+
+                if (ccy1 === 'USD' && ccy2 === xxx) {
+                    return quantity / price;
+                } else if (ccy1 === xxx && ccy2 === 'USD') {
+                    return quantity * price;
+                }
+            }
+
+            console.error('Cannot convert ' + xxx +' to USD');
+            return 0; // todo handle properly case when we have no USD equivalent for xxx
+        }
     };
 
 };
