@@ -122,7 +122,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <button type="button" class="btn btn-danger btn-lg">Sell</button>
+                    <button type="button" class="btn btn-danger btn-lg" ng-click="sell()">Sell</button>
                 </div>
             </div>
 
@@ -152,6 +152,7 @@
                 <table class="table table-striped">
                     <thead>
                     <tr>
+                        <th>Date</th>
                         <th>Time</th>
                         <th>Symbol</th>
                         <th>Side</th>
@@ -162,7 +163,8 @@
 
                     <tbody>
                     <tr ng-repeat="operation in operation_list | filter:{ 'symbol': operationSearchForSymbol} | orderBy: 'timestamp'">
-                        <td>{{operation.timestamp.toLocaleString()}}</td>
+                        <td>{{operation.timestamp.toLocaleDateString()}}</td>
+                        <td>{{operation.timestamp.toLocaleTimeString()}}</td>
                         <td>{{operation.symbol}}</td>
                         <td>{{operation.side}}</td>
                         <td>{{operation.quantity}}</td>

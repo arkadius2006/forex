@@ -71,16 +71,51 @@ var quotesController = function ($scope) {
 
     $scope.quoteSearchForSymbol = '';
 
-    $scope.currentQuote = undefined;
+    $scope.currentQuantity = '';
 
     $scope.select_quote = function (theQuote) {
-        $scope.currentQuote = theQuote;
         $scope.quoteSearchForSymbol = theQuote.symbol;
     };
 
     $scope.new_order = {};
 
     $scope.buy = function () {
+        var order;
+
+        order = getOrder();
+        if (!order) {
+            return;
+        }
+
+        order['side'] = 'buy';
+
+        // confirm
+        var decision = confirm('Do you want to ' + order['side'] + ' ' + order['quantity'] + ' ' + order['symbol'] + " @ " + order['price'] + "?");
+        if (decision) {
+            order['timestamp'] = new Date();
+            submitOrder(order);
+        }
+    };
+
+    $scope.sell = function() {
+        var order;
+
+        order = getOrder();
+        if (!order) {
+            return;
+        }
+
+        order['side'] = 'sell';
+
+        // confirm
+        var decision = confirm('Do you want to ' + order['side'] + ' ' + order['quantity'] + ' ' + order['symbol'] + " @ " + order['price'] + "?");
+        if (decision) {
+            order['timestamp'] = new Date();
+            submitOrder(order);
+        }
+    };
+
+    var getOrder = function () {
         // figure out which quotes are shown
         var shown_quote_list = [];
         var i, q;
@@ -101,22 +136,21 @@ var quotesController = function ($scope) {
 
         if (shown_quote_list.length === 0) {
             alert('No matching quotes');
-            return;
+            return undefined;
         }
 
         if (shown_quote_list.length > 1) {
             alert('More than 1 matching quote');
-            return;
+            return undefined;
         }
 
         var theQuote = shown_quote_list[0];
         var theSymbol = theQuote.symbol;
-        var ccy1 = theSymbol.substr(0, 3);
-        var ccy2 = theSymbol.substr(3, 3);
+        var thePrice = theQuote['price'];
 
         if (!$scope.currentQuantity) {
             alert('Please enter quantity');
-            return;
+            return undefined;
         }
 
         var theQuantity = parseFloat($scope.currentQuantity);
@@ -124,29 +158,10 @@ var quotesController = function ($scope) {
             // ok
         } else {
             alert('Invalid quantity.');
-            return;
+            return undefined;
         }
 
-        // confirm
-        var decision = confirm("Do you want to buy " + theQuantity + " " + theQuote.symbol + " @ " + theQuote.price + "?");
-        if (decision) {
-            console.log('Process buy ' + theQuote.symbol + ' ' + theQuote.price + ' ' + theQuantity);
-
-            var now = new Date();
-            adjust(ccy1, theQuantity);
-            adjust(ccy2, -theQuantity * theQuote.price);
-
-            $scope.operation_list.push({
-                'timestamp': now,
-                'symbol': theQuote.symbol,
-                'quantity': theQuantity,
-                'side': 'buy',
-                'price': theQuote.price
-            });
-        }
-
-        // clean selection
-        $scope.currentQuote = undefined;
+        return {'symbol' : theSymbol, 'price': thePrice, 'quantity': theQuantity};
     };
 
     var adjust = function (ccy, amount) {
@@ -171,6 +186,38 @@ var quotesController = function ($scope) {
         }
 
         thePosition['position'] += amount;
+    };
+
+    var submitOrder = function (order) {
+        console.log('Processing order: ' + JSON.stringify(order));
+
+        var ccy1 = order['symbol'].substr(0, 3);
+        var ccy2 = order['symbol'].substr(3, 3);
+
+        switch (order['side']) {
+            case 'buy': {
+                adjust(ccy1, order['quantity']);
+                adjust(ccy2, -order['quantity'] * order['price']);
+                break;
+            }
+            case 'sell': {
+                adjust(ccy1, -order['quantity']);
+                adjust(ccy2, order['quantity'] * order['price']);
+                break;
+            }
+            default: {
+                console.error('Unexpected side: ' + order['side']);
+                return;
+            }
+        }
+
+        $scope.operation_list.push({
+            'timestamp': order['timestamp'],
+            'symbol': order['symbol'],
+            'quantity': order['quantity'],
+            'side': order['side'],
+            'price': order['price']
+        });
     };
 
 };
