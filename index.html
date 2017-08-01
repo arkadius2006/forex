@@ -103,7 +103,7 @@
                     </thead>
                     <tbody>
                     <tr ng-repeat="quote in quote_list | filter:{ 'symbol': quoteSearchForSymbol}">
-                        <td>{{quote.symbol}}</td>
+                        <td><button class="btn btn-link" ng-click="select_quote(quote)">{{quote.symbol}}</button></td>
                         <td>{{quote.price}}</td>
                         <td>{{quote.timestamp}}</td>
                         <td>{{quote.expiresInSeconds}} sec</td>
@@ -114,11 +114,11 @@
 
             <div class="row">
                 <div class="col-md-4">
-                    <button type="button" class="btn btn-success btn-lg">Buy</button>
+                    <button type="button" class="btn btn-success btn-lg" ng-click="buy()">Buy</button>
                 </div>
                 <div class="col-md-4">
                     <div class="input-group-lg">
-                        <input type="text" class="form-control" id="your-quantity" placeholder="Quantity...">
+                        <input type="text" class="form-control" id="your-quantity" placeholder="Quantity..." ng-model="currentQuantity">
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -162,7 +162,7 @@
 
                     <tbody>
                     <tr ng-repeat="operation in operation_list | filter:{ 'symbol': operationSearchForSymbol} | orderBy: 'timestamp'">
-                        <td>{{operation.timestamp}}</td>
+                        <td>{{operation.timestamp.toLocaleString()}}</td>
                         <td>{{operation.symbol}}</td>
                         <td>{{operation.side}}</td>
                         <td>{{operation.quantity}}</td>
